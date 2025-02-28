@@ -48,6 +48,41 @@ app.post('/api/request', async (req, res) => {
     }
 });
 
+// GET endpoint to load all objects
+app.get('/api/objects', async (req, res) => {
+    try {
+        const token = process.env.TOKEN;
+
+        if (!token) {
+            return res.status(500).json({ error: 'TOKEN not found in environment variables' });
+        }
+
+        const response = await axios.post(
+            'https://events.palantirfoundry.com/api/v2/ontologies/ontology-5fe816d4-68f6-4492-87cc-9278a126531c/objectSets/loadObjects',
+            {
+                objectSet: {
+                    type: "base",
+                    objectType: "ObjectiveSummary"
+                }
+            },
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        return res.json(response.data);
+    } catch (error) {
+        console.error('Error:', error.message);
+        return res.status(500).json({
+            error: 'An error occurred',
+            details: error.response ? error.response.data : error.message
+        });
+    }
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
     res.status(200).json({
